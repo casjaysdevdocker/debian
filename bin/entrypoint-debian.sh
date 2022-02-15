@@ -24,7 +24,7 @@ if [[ "$1" == "--debug" ]]; then shift 1 && set -xo pipefail && export SCRIPT_OP
 trap 'exitCode=${exitCode:-$?};[ -n "$ENTRYPOINT_SH_TEMP_FILE" ] && [ -f "$ENTRYPOINT_SH_TEMP_FILE" ] && rm -Rf "$ENTRYPOINT_SH_TEMP_FILE" &>/dev/null' EXIT
 __exec_bash() { [ -n "$1" ] && exec /bin/bash -l -c "${@:-bash}" || exec /bin/bash -l; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-CONFIG_DIR="$(ls /config/ 2>/dev/null | grep '^' || return 0)"
+CONFIG_DIR="$(ls /config/ 2>/dev/null | grep '^' || false)"
 export TZ="${TZ:-America/New_York}"
 export HOSTNAME="${HOSTNAME:-casjaysdev-alpine}"
 
