@@ -21,18 +21,22 @@ SRC_DIR="${BASH_SOURCE%/*}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
 if [[ "$1" == "--debug" ]]; then shift 1 && set -xo pipefail && export SCRIPT_OPTS="--debug" && export _DEBUG="on"; fi
-trap 'exitCode=${exitCode:-$?};[ -n "$ENTRYPOINT_SH_TEMP_FILE" ] && [ -f "$ENTRYPOINT_SH_TEMP_FILE" ] && rm -Rf "$ENTRYPOINT_SH_TEMP_FILE" &>/dev/null' EXIT
-__exec_bash() { [ -n "$1" ] && exec /bin/bash -l -c "${@:-bash}" || exec /bin/bash -l; }
+trap 'exit $?' HUP INT QUIT TERM EXIT
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__exec_bash() { [ -n "$1" ] && exec /bin/bash -c "${@:-bash}" || exec /bin/bash || exit 10; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CONFIG_DIR="$(ls /config/ 2>/dev/null | grep '^' || false)"
 export TZ="${TZ:-America/New_York}"
 export HOSTNAME="${HOSTNAME:-casjaysdev-alpine}"
-
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -n "${TZ}" ] && echo "${TZ}" >/etc/timezone
 [ -n "${HOSTNAME}" ] && echo "${HOSTNAME}" >/etc/hostname
 [ -n "${HOSTNAME}" ] && echo "127.0.0.1 $HOSTNAME localhost" >/etc/hosts
 [ -f "/usr/share/zoneinfo/${TZ}" ] && ln -sf "/usr/share/zoneinfo/${TZ}" "/etc/localtime"
-
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[[ -d "/config/" ]] && rm -Rf "/config/.gitkeep"
+[[ -d "/data/" ]] && rm -Rf "/data/.gitkeep"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -n "$CONFIG_DIR" ]; then
   for config in $CONFIG_DIR; do
     if [ -d "/config/$config" ]; then
@@ -42,16 +46,21 @@ if [ -n "$CONFIG_DIR" ]; then
     fi
   done
 fi
-
-case $1 in
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+case "$1" in
 healthcheck)
-  echo 'OK'
+  echo "$(uname -s) $(uname -m) is OK"
+  exit $?
   ;;
-bash | shell | sh)
+sh | bash | shell | */bin/sh | */bin/bash)
   shift 1
   __exec_bash "$@"
+  exit $?
   ;;
 *)
   __exec_bash "$@"
+  exit $?
   ;;
 esac
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+exit $?
