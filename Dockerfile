@@ -10,9 +10,13 @@ RUN apt-get update && \
   wget \
   curl \
   postfix \
-  git && \
+  unzip \
+  git \
+  tini && \
   ln -sf /bin/bash /bin/sh && \
-  rm -rf /var/lib/apt/lists/*
+  rm -rf /var/lib/apt/lists/* && \
+  echo 'export DEBIAN_FRONTEND=noninteractive' >/etc/profile.d/apt.sh && \
+  chmod 755 /etc/profile.d/apt.sh
 
 COPY ./bin/. /usr/local/bin/
 
@@ -31,7 +35,7 @@ LABEL \
   org.label-schema.vcs-type="Git" \
   org.label-schema.schema-version="latest" \
   org.label-schema.vendor="CasjaysDev" \
-  maintainer="CasjaysDev <docker-admin@casjaysdev.com>" 
+  maintainer="CasjaysDev <docker-admin@casjaysdev.com>"
 
 COPY --from=base / /
 
@@ -39,4 +43,5 @@ WORKDIR /root
 VOLUME [ "/root","/config", "/data" ]
 
 HEALTHCHECK CMD [ "/usr/local/bin/entrypoint-debian.sh", "healthcheck" ]
-ENTRYPOINT [ "/usr/local/bin/entrypoint-debian.sh" ]
+ENTRYPOINT [ "tini", "-p", "SIGTERM", "--", "/usr/local/bin/entrypoint-debian.sh" ]
+CMD [ "/bin/bash", "-c" ]
