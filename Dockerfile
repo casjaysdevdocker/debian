@@ -2,7 +2,8 @@ FROM bitnami/minideb as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
+RUN echo 'export DEBIAN_FRONTEND=noninteractive' >/etc/profile.d/apt.sh && \
+  apt-get update && \
   install_packages \
   sudo \
   bash \
@@ -13,9 +14,7 @@ RUN apt-get update && \
   git \
   tini && \
   update-alternatives --install /bin/sh sh /bin/bash 1 && \
-  update-alternatives --install /sbin/init init /usr/bin/tini 1 && \
   rm -rf /var/lib/apt/lists/* && \
-  echo 'export DEBIAN_FRONTEND=noninteractive' >/etc/profile.d/apt.sh && \
   chmod 755 /etc/profile.d/apt.sh
 
 COPY ./bin/. /usr/local/bin/
