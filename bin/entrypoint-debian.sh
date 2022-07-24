@@ -52,7 +52,7 @@ healthcheck)
   echo "$(uname -s) $(uname -m) is OK"
   exit $?
   ;;
-sh | bash | shell | */bin/sh | */bin/bash)
+sh | bash | shell | */sh | */bash)
   shift 1
   __exec_bash "$@"
   exit $?
