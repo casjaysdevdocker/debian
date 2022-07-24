@@ -43,6 +43,6 @@ WORKDIR /root
 VOLUME [ "/root","/config", "/data" ]
 
 HEALTHCHECK CMD [ "/usr/local/bin/entrypoint-debian.sh", "healthcheck" ]
-ENTRYPOINT [ "/usr/local/bin/entrypoint-debian.sh" ]
-CMD [ "tini", "-p", "SIGTERM", "--" ]
+ENTRYPOINT [  "tini", "-p", "SIGTERM", "--" ]
+CMD [ "/usr/local/bin/entrypoint-debian.sh" ]
 
