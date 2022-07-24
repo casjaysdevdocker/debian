@@ -1,10 +1,9 @@
 FROM bitnami/minideb as base
 
-WORKDIR ${HOME}
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-  apt-get install -yy \
+  install_packages \
   sudo \
   bash \
   wget \
@@ -13,7 +12,8 @@ RUN apt-get update && \
   unzip \
   git \
   tini && \
-  ln -sf /bin/bash /bin/sh && \
+  update-alternatives --install /bin/sh sh /bin/bash 1 && \
+  update-alternatives --install /sbin/init init /usr/bin/tini 1 && \
   rm -rf /var/lib/apt/lists/* && \
   echo 'export DEBIAN_FRONTEND=noninteractive' >/etc/profile.d/apt.sh && \
   chmod 755 /etc/profile.d/apt.sh
@@ -37,11 +37,12 @@ LABEL \
   org.label-schema.vendor="CasjaysDev" \
   maintainer="CasjaysDev <docker-admin@casjaysdev.com>"
 
-COPY --from=base / /
+COPY --from=base /. /
 
 WORKDIR /root
 VOLUME [ "/root","/config", "/data" ]
 
 HEALTHCHECK CMD [ "/usr/local/bin/entrypoint-debian.sh", "healthcheck" ]
-ENTRYPOINT [ "tini", "-p", "SIGTERM", "--", "/usr/local/bin/entrypoint-debian.sh" ]
-CMD [ "/bin/bash", "-c" ]
+ENTRYPOINT [ "/usr/local/bin/entrypoint-debian.sh" ]
+CMD [ "tini", "-p", "SIGTERM", "--" ]
+
